@@ -17,12 +17,12 @@ class TemporalSplit:
         test_part = []
         val_part = []
 
-        df = data.copy().sort_values(by=["user_id", "timestamp"])
+        df = data.copy().sort_values(by=["user_idx", "timestamp"])
 
-        for _, group in df.groupby("user_id"):
+        for _, group in df.groupby("user_idx"):
             
             split_index = int(len(group) * train_size)
-            val_test_split_index = split_index + int(len(group) * (1 - train_size))
+            val_test_split_index = split_index + int(len(group) * (1 - train_size) / 2)
 
             train_part.append(
                 group.iloc[:split_index]
