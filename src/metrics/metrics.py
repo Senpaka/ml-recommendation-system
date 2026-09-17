@@ -53,6 +53,7 @@ def ndcg_at_k(
     if k > len(y_pred):
         raise ValueError("k must be less than or equal to the length of y_pred.")
 
+    y_true = set(y_true)
     y_pred = y_pred[:k]
 
     dcg = 0.0

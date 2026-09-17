@@ -7,6 +7,13 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "pandas (>=3.0.5,<4.0.0)",
+    "numpy (>=2.5.3,<3.0.0)",
+    "scikit-learn (>=1.9.0,<2.0.0)",
+    "joblib (>=1.6.0,<2.0.0)",
+    "pyarrow (>=25.0.1,<26.0.0)",
+    "optuna (>=5.0.0,<6.0.0)",
+    "catboost (>=1.2.10,<2.0.0)"
 ]
 
 [tool.poetry]
@@ -16,3 +23,10 @@ package-mode = false
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ipykernel (>=7.3.0,<8.0.0)",
+    "jupyter (>=1.1.1,<2.0.0)",
+    "matplotlib (>=3.11.1,<4.0.0)"
+]

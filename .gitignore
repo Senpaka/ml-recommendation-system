@@ -1,5 +1,6 @@
 .env
 /datasets
+/notebook/data
 
 # Python
 __pycache__/
