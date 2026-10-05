@@ -2,6 +2,13 @@ import pandas as pd
 
 from catboost import CatBoostRanker
 
+"""
+model_params = { 
+
+
+        "n_jobs": -1
+    }
+"""
 
 class Ranker:
 
@@ -23,7 +30,8 @@ class Ranker:
                 learning_rate=learning_rate,
                 depth=depth,
                 random_seed=random_seed,
-                verbose=verbose
+                verbose=verbose,
+                thread_count=-1
             )
 
     def fit(
@@ -38,7 +46,8 @@ class Ranker:
             X,
             y,
             group_id=group,
-            cat_features=features
+            cat_features=features,
+            
         )
 
         return self
@@ -49,3 +58,7 @@ class Ranker:
         candidates: pd.DataFrame
     ):
         return self.model.predict(candidates)
+
+
+    def get_feature_importance(self):
+        return self.model.get_feature_importance()

@@ -30,9 +30,6 @@ def recall_at_k(
     if k <= 0:
         raise ValueError("k must be a positive integer.")
 
-    if k > len(y_pred):
-        raise ValueError("k must be less than or equal to the length of y_pred.")
-
     y_pred = y_pred[:k]
 
     hits = len(
