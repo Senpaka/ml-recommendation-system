@@ -28,5 +28,8 @@ build-backend = "poetry.core.masonry.api"
 dev = [
     "ipykernel (>=7.3.0,<8.0.0)",
     "jupyter (>=1.1.1,<2.0.0)",
-    "matplotlib (>=3.11.1,<4.0.0)"
+    "matplotlib (>=3.11.1,<4.0.0)",
+    "optuna (>=5.0.0,<6.0.0)",
+    "scipy (>=1.18.1,<2.0.0)",
+    "implicit (>=0.7.3,<0.8.0)"
 ]

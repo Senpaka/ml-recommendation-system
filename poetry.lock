@@ -6,7 +6,7 @@ version = "1.19.2"
 description = "A database migration tool for SQLAlchemy."
 optional = false
 python-versions = ">=3.10"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "alembic-1.19.2-py3-none-any.whl", hash = "sha256:32d553dcd577e6fe5c3c63e91468526d35e4dcecafe865d7db4e9b328fa93cb2"},
     {file = "alembic-1.19.2.tar.gz", hash = "sha256:297950a8a91f6770eb82bfbce9bea55c728b90a5386c6e81430191a319d138b0"},
@@ -618,11 +618,11 @@ description = "Cross-platform colored terminal text."
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 groups = ["main", "dev"]
+markers = "sys_platform == \"win32\" or platform_system == \"Windows\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-markers = {main = "sys_platform == \"win32\" or platform_system == \"Windows\"", dev = "sys_platform == \"win32\""}
 
 [[package]]
 name = "colorlog"
@@ -630,7 +630,7 @@ version = "6.12.0"
 description = "Add colours to the output of Python's logging module."
 optional = false
 python-versions = ">=3.6"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "colorlog-6.12.0-py3-none-any.whl", hash = "sha256:30d392604e9110045a2c2aeefc27d7a017abbab63f3a8aee594eac0801df784e"},
     {file = "colorlog-6.12.0.tar.gz", hash = "sha256:2a7924c1dadf18b22a0eb8b06d1c7b01d5341707ec1641eb6fcc4fde0c3e8e5f"},
@@ -985,7 +985,7 @@ version = "3.5.5"
 description = "Lightweight in-process concurrent programming"
 optional = false
 python-versions = ">=3.10"
-groups = ["main"]
+groups = ["main", "dev"]
 markers = "platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\""
 files = [
     {file = "greenlet-3.5.5-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:816230f469381ad0a43abc9fa8dda5a699e32fb78958dde32ded93213b70a667"},
@@ -1146,6 +1146,62 @@ files = [
 
 [package.extras]
 all = ["coverage (>=7.10.0)", "hypothesis (>=6.141.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.16.0)", "ty (>=0.0.37)"]
+
+[[package]]
+name = "implicit"
+version = "0.7.3"
+description = "Collaborative Filtering for Implicit Feedback Datasets"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "implicit-0.7.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:17a844e9783550d33148fda6b8e9067bb4448d4f2b154ec4ef97df24d16bccdd"},
+    {file = "implicit-0.7.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:73346fe465ddbf9281627816300cc4249817bd5284ace023721717f22288656b"},
+    {file = "implicit-0.7.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:d479f91657af5dfade0c87a671303acfc954d8bb2aaf5622524783dff490596f"},
+    {file = "implicit-0.7.3-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:7d80d227d1f4d75e7cbbec7cde02560f732710537765fd3157afb14a87c46070"},
+    {file = "implicit-0.7.3-cp310-cp310-manylinux2014_x86_64.whl", hash = "sha256:0217a6e8e2d2c217afde258e81d0dd53348e3a3ac36c298c151c7ebc722ae36d"},
+    {file = "implicit-0.7.3-cp310-cp310-win_amd64.whl", hash = "sha256:0b4b35427fadf6c5183391ea913b5b2a08b886af90e40343743ca3490dbbed1f"},
+    {file = "implicit-0.7.3-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:a059c926f23813d288b0ad68e436c84ed24c7049a26dc1b4cced70c9b8d1cf40"},
+    {file = "implicit-0.7.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:7a6035c0fbe89eef9d1789367c8097eb3145af3cfffd0dc0e92b2570ab67a6fc"},
+    {file = "implicit-0.7.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:77b9b93ea7840be5367c0b49ff90a371d5f5e86bc4743776ee491dfb62854c2b"},
+    {file = "implicit-0.7.3-cp311-cp311-manylinux2014_aarch64.whl", hash = "sha256:e4d56a2d9db92e9cf1d0c9af740581d40423c216b0e207d7d72d59a0ca5519c2"},
+    {file = "implicit-0.7.3-cp311-cp311-manylinux2014_x86_64.whl", hash = "sha256:bad1d7263ce295674562cf74482a83ae6847579579f8e2f5e70da840386c2c14"},
+    {file = "implicit-0.7.3-cp311-cp311-win_amd64.whl", hash = "sha256:02cf46507f62514415374511cc79b2cba8021d9d432abfca4407276d4d41bc4d"},
+    {file = "implicit-0.7.3-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:4970db19607f6f33cc4f2567233e03a4902191b6ebed7f264f8810d730dadb23"},
+    {file = "implicit-0.7.3-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:a04066fa5798bb094533678b45f1a3298cd44acb8c42f516fe46893be1989227"},
+    {file = "implicit-0.7.3-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4483a3746d97f077c61d87a23bc7b6948ae75957def1cb4828d4a96ec5b91e75"},
+    {file = "implicit-0.7.3-cp312-cp312-manylinux2014_aarch64.whl", hash = "sha256:ab5825723918b790cab45c2ec64669ac03b1b1774e9ce62957b67ad37fdf2d45"},
+    {file = "implicit-0.7.3-cp312-cp312-manylinux2014_x86_64.whl", hash = "sha256:0de3734a74db5248b474ebf2c2e9dcf9ab16de137a009436f6ae8f8880486ac2"},
+    {file = "implicit-0.7.3-cp312-cp312-win_amd64.whl", hash = "sha256:c3e10e634a1b24bb1e8a036529940b8884c33a2dbb9fb19194827c0b68802edc"},
+    {file = "implicit-0.7.3-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:193ac8dc10614fc0db153a0bf3a7f53f4cbad094c1b7938c7f22c796e541a3bb"},
+    {file = "implicit-0.7.3-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:36bb093bad91479e9226846de59430848165c6e423c8959b191e009f04bd8619"},
+    {file = "implicit-0.7.3-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:00a7791b7b0a6a0802c95dc88a432e5af6beb19cd4a948196df98fb42a2a7d96"},
+    {file = "implicit-0.7.3-cp313-cp313-manylinux2014_aarch64.whl", hash = "sha256:6a2caddac3ca46840bb8db5f8a7d386b00c9c708095e8df86919c737c3ceca8e"},
+    {file = "implicit-0.7.3-cp313-cp313-manylinux2014_x86_64.whl", hash = "sha256:71573a1083b33878032c44e4caa04c6853b0f1c959bf5460f4fb07e396267fc4"},
+    {file = "implicit-0.7.3-cp313-cp313-win_amd64.whl", hash = "sha256:395926a937cc75e89eecd5b9042df18b6b2dca826bb7e11b2abdff7584a2ea4e"},
+    {file = "implicit-0.7.3-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:30b46876e27add6d65125fd9dc0b9af4a1b5667123cf76aefbd38bcdd23e69b4"},
+    {file = "implicit-0.7.3-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:7299d2d127ba86199c5794d17db923f45d9ffe1b4eb5cdd3ba5aa64600dfbe2d"},
+    {file = "implicit-0.7.3-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:53f6607bc2ec2c5f4b032e7a904a8cec7c6aa552bd844a69ad46ee65225cb1e0"},
+    {file = "implicit-0.7.3-cp314-cp314-manylinux2014_aarch64.whl", hash = "sha256:7518514aaeb3348103a8bb31e15e45d1af1c4564403dd9dbe7d09c5e85ad8b83"},
+    {file = "implicit-0.7.3-cp314-cp314-manylinux2014_x86_64.whl", hash = "sha256:ec1f2c451685898de0379e12da29e6a50391164f4b21760cb4f06a35ff1a8e8f"},
+    {file = "implicit-0.7.3-cp314-cp314-win_amd64.whl", hash = "sha256:bf7424055ae22289e6d519b7e8bc31e7af8ea1e07a0ca6fd85c4d2f4822f3ae3"},
+    {file = "implicit-0.7.3-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:205bacf269636d965f9c9dd841652fe03d47fbd9707db4933013de24fa0fef08"},
+    {file = "implicit-0.7.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ce83cc1d0cbd1c8d55b5f665dffeaa80768d364853e8532dac992b8c54b2b195"},
+    {file = "implicit-0.7.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:2734cf6c695ce4e8704f82dee9fc8fe6eb6ef7df8eb4e10f4558e2421d819dc3"},
+    {file = "implicit-0.7.3-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:6ea82900e1ce7bf7c2de49a1be5374ce9df5a66327b5b473090527f9cfbf3f9d"},
+    {file = "implicit-0.7.3-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:3e5cbf029df5cd86c7d809fdad7084d50d10ec24994ebc94cbcfd9e660928ae9"},
+    {file = "implicit-0.7.3-cp39-cp39-win_amd64.whl", hash = "sha256:9d393cd27190e43485bf0a4d1f34a7974a799ab44ed53b2dbff5f65b8ff4b63e"},
+    {file = "implicit-0.7.3.tar.gz", hash = "sha256:9571a52d70b3667e99a6e6aae6681526dd3286c765cf0ea10e1073d068a98057"},
+]
+
+[package.dependencies]
+numpy = ">=1.17.0"
+scipy = ">=0.16"
+threadpoolctl = "*"
+tqdm = ">=4.27"
+
+[package.extras]
+gpu = ["rmm-cu13"]
 
 [[package]]
 name = "ipykernel"
@@ -1857,7 +1913,7 @@ version = "1.4.1"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
 optional = false
 python-versions = ">=3.10"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "mako-1.4.1-py3-none-any.whl", hash = "sha256:a359d9a94a541213958742b2698d0a7757bb83551767bc468a74b9905aba9617"},
     {file = "mako-1.4.1.tar.gz", hash = "sha256:d7904710b662996425a21627710c4777c45053146942cf8a7aebf757c92b8c27"},
@@ -2312,7 +2368,7 @@ version = "5.0.0"
 description = "A hyperparameter optimization framework"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "optuna-5.0.0-py3-none-any.whl", hash = "sha256:5fff892ae6baf4948c810c5b8635ec67e08efb0709b41cb73b14e30391d44720"},
     {file = "optuna-5.0.0.tar.gz", hash = "sha256:358bb878b7b1e20e90dc944ac4261796dd3d5c2b7860aa960a08fc10e0b5beff"},
@@ -3316,7 +3372,7 @@ version = "1.18.1"
 description = "Fundamental algorithms for scientific computing in Python"
 optional = false
 python-versions = ">=3.12"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "scipy-1.18.1-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:457fd7a2a8edeb044ab6ffbc0aa03ff6cd18491356e5e0c834d76ce621b916d1"},
     {file = "scipy-1.18.1-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:e708533e8b2ae2497d65346538a7dcc92814410b25b81432eac66de0f2af8265"},
@@ -3435,7 +3491,7 @@ version = "2.0.52"
 description = "Database Abstraction Library"
 optional = false
 python-versions = ">=3.7"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "sqlalchemy-2.0.52-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a7438774e1091192fc50a2bd8ceff5c596912d00ecd46587e88effdea7826101"},
     {file = "sqlalchemy-2.0.52-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:6c1b7ed45bf87b214e0a9def9c2313949067efe6269db5ef18d542ee13250af7"},
@@ -3568,7 +3624,7 @@ version = "3.6.0"
 description = "threadpoolctl"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "threadpoolctl-3.6.0-py3-none-any.whl", hash = "sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb"},
     {file = "threadpoolctl-3.6.0.tar.gz", hash = "sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e"},
@@ -3619,7 +3675,7 @@ version = "4.70.1"
 description = "Fast, Extensible Progress Meter"
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "tqdm-4.70.1-py3-none-any.whl", hash = "sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73"},
     {file = "tqdm-4.70.1.tar.gz", hash = "sha256:cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4"},
@@ -3780,4 +3836,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "e69943a93f6703f32de848b07135555169f7a68b9cfc89279337e0a11c93e0a1"
+content-hash = "8c017c3fb535b74cbd6d3e79c5667cec37515e5f2c5e13c4f03660dff9b347ad"
