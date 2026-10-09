@@ -3,9 +3,28 @@ from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender
 
 import pandas as pd
+import numpy as np
 
 class CandidateGenerator:
+    """
+    Генератор построения кандидатов для ранжирования
 
+    Генератор берет рекомендации для каждого пользователя
+    Строит для них ранк и rrf-score
+    
+    После прохода по всем пользователям кандидаты собираются в единый `pd.DataFrame`
+    и сортируются по rrf-score 
+
+    Attributes:
+        k_als (int): Количество кандидатов из ALS модели
+        k_sim (int): Количество кандидатов из Similarity модели
+        k_pop (int): Количество кандидатов из IMDB модели
+        candidate_k (int): Лимит кандидатов на 1 пользователя
+        user_encoder: Декодировщик для пользователей
+        als_model (AlsRecommender): Обученная ALS модель
+        similarity_model (SimilarityRecommender): Обученная Similarity модель
+        popularity_model (Recommender): Обученная IMDB модель
+    """
     def __init__(
         self,
         als_model: AlsRecommender,
@@ -27,28 +46,35 @@ class CandidateGenerator:
         self.similarity_model = similarity_model
         self.popularity_model = popularity_model
 
-    def build_candidates(self, users):
+    def build_candidates(self, users: np.ndarray) -> pd.DataFrame:
+        """
+        Построение кандидатов
 
+        Проходимся по всем пользователям,
+        забираем рекомендации с каждой модели,
+        добавляем ранг фильма и считаем rrf
+        и добавляем в `rows`.
+        Если рекомендаций не окажется то возвращаем пустой `pd.DataFrame`
+
+        Args:
+            users (np.ndarray): Массив уникальных идентификаторов пользователей 
+        Returns:
+            pd.DataFrame: Кандидаты, полученные из трех моделей
+        """
         rows = []
 
         for user_idx in users:
             candidates = {}
 
             als_candidates = self.als_model.recommend(user_idx, k=self.k_als)
-
             sim_candidates = self.similarity_model.recommend(user_idx, k=self.k_sim)
-
             pop_candidates = self.popularity_model.recommend(user_idx, k=self.k_pop)
 
-            self._build_rank(als_candidates, "als")
-
-            self._build_rank(sim_candidates, "sim")
-
-            self._build_rank(pop_candidates, "pop")          
-
+            self._build_rank(candidates, als_candidates, "als")
+            self._build_rank(candidates, sim_candidates, "sim")
+            self._build_rank(candidates, pop_candidates, "pop")          
             self._build_row(user_idx, rows, candidates)
             
-
         result = pd.DataFrame(rows)
 
         if result.empty:
@@ -69,7 +95,18 @@ class CandidateGenerator:
         return result
 
     @staticmethod
-    def _build_rank(candidates: dict, model_candidates: list[int, float], model_name: str, ):
+    def _build_rank(candidates: dict, model_candidates: list[int, float], model_name: str) -> None:
+        """
+        Присваивание ранга фильму для любой модели
+
+        проходимся по всем фильмам и присваиваем им ранг (1,...)
+        так же укажем что фильм рекомендуется из этой модели
+
+        Args:
+            candidates (dict): Текущие кандидаты
+            model_candidates (list[int, float]): Кандидаты, рекомендованные моделью
+            model_name (str): Название модели
+        """
         for rank, (movie_id, score) in enumerate(model_candidates, start=1):
             candidates.setdefault(movie_id, {})
             candidates[movie_id].update({
@@ -79,8 +116,17 @@ class CandidateGenerator:
             })
 
     @staticmethod
-    def _build_row(user_idx: int, rows: list[dict], candidates: dict):
+    def _build_row(user_idx: int, rows: list[dict], candidates: dict) -> None:
+        """
+        Добавляет rff к каждому фильму
 
+        проходится по всем кандидатам и для каждого считает rff
+
+        Args:
+            user_idx (int): Индекс пользователя
+            rows (list[dict]): Колонки для построения кандидатов
+            candidates (dict): Текущие кандидаты из трех моделей
+        """
         for movie_id, features in candidates.items():
         
             rrf = 0.

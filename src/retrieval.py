@@ -2,13 +2,15 @@ from src.models.als import AlsRecommender
 from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender
 from src.generator import CandidateGenerator
+from src.preprocessing import build_retrieval_data
 
 import pandas as pd
 
 
-
 class RetrievalPipeline:
-
+    """
+    
+    """
     def __init__(
         self,
         als_params: dict,
@@ -35,8 +37,10 @@ class RetrievalPipeline:
 
     def fit(self, history: pd.DataFrame, n_users: int):
 
-        self.als_model.fit(history=history, n_users=n_users)
-        self.similarity_model.fit(history=history, n_users=n_users)
+        data = build_retrieval_data(history=history, n_users=n_users)
+
+        self.als_model.fit(data=data)
+        self.similarity_model.fit(data=data, history=history)
         self.popularity_model.fit(history)
 
         self.generator = CandidateGenerator(
@@ -52,7 +56,7 @@ class RetrievalPipeline:
 
         return self
 
-    def make_candidates(self, users: pd.DataFrame):
+    def make_candidates(self, users: pd.Series):
 
         if self.generator is None:
             raise RuntimeError("RetrievalPipeline must be fitted first.")

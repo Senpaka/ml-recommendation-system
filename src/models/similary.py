@@ -1,11 +1,34 @@
-import numpy as np
-from scipy.sparse import csr_matrix
+import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import normalize
 
+from src.data import RetrievalData
+
 
 class SimilarityRecommender:
+    """
+    Компонент рекомендательной системы Item2Item, основанный на методе ближайших соседей
+    Использует `sklearn.neighbors.NearestNeighbors` для поиска релевантности
 
+    Модель обучается на матрице взаимодействий "пользователь-фильм",
+    построенной по положительной оценке (rating >= 4)
+    в качестве веса взаимодействий используется (rating - 3)
+    это усилит вклад положительных оценок при обучении 
+
+    После обучения модель может выдавать top-k рекомендаций для заданного пользователя,
+    автоматически исключая просмотренные им фильмы
+
+    Attributes:
+        k_neighbors (int): Количество соседей для поиска
+        max_sim_seeds (int): Максимальное число последних положительно оценённых фильмов, используемых для поиска похожих
+        movie_user (csr_matrix): Транспонированная и нормализованная по строкам матрица
+        model (NearestNeighbors): Модель поиска ближайших соседей
+        neighbors (dict[int: tuple]): Словарь с наиболее похожими фильмами. 
+            Внутренний индекс фильма → пара массивов индексов соседей и сходств
+        liked_recent (dict[int, list[int]]): Фильмы, которые пользователь оценил положительно
+        data (RetrievalData): Общие данные retrieval: матрица взаимодействий,
+            соответствия индексов и просмотренные фильмы.
+    """
     def __init__(
         self,
         k_neighbors: int = 100,
@@ -16,39 +39,26 @@ class SimilarityRecommender:
 
     def fit(
         self,
-        history,
-        n_users,
-    ):
-        movie_ids = history["movie_id"].unique()
+        data: RetrievalData,
+        history: pd.DataFrame
+    ) -> "SimilarityRecommender":
+        """
+        Модель обучает `NearestNeighbors` на истории взаимодействий фильмов с пользователями
 
-        self.movie_to_sim = {
-            movie_id: idx
-            for idx, movie_id in enumerate(movie_ids)
-        }
+        На вход принимает собранный `RetrievalData` и обучает `NearestNeighbors`
+        Сам `RetrievalData` сохраняется в `self.data` и используется в `recommend`
 
-        self.sim_to_movie = {
-            idx: movie_id
-            for movie_id, idx in self.movie_to_sim.items()
-        }
+        args: 
+            data (RetrievalData): Контейнер, хранящий данные для Retireval
+            history (pd.DataFrame): История взаимодействий
+        
+        return:
+            SimilarityRecommender: self обученный экземпляр рекомендаций
+        """
 
-        positive = history.loc[
-            history["rating"] >= 4,
-            ["user_idx", "movie_id", "rating"]
-        ].copy()
+        self.data = data
 
-        positive["sim_movie_idx"] = positive["movie_id"].map(self.movie_to_sim)
-        values = (positive["rating"] - 3).values.astype(np.float32)
-
-        user_movie = csr_matrix(
-            (
-                values,
-                (positive["user_idx"], positive["sim_movie_idx"])
-            ),
-            shape=(n_users, len(self.movie_to_sim)),
-            dtype=np.float32
-        )
-
-        self.movie_user = normalize(user_movie.T.tocsr(), axis=1)
+        self.movie_user = normalize(self.data.user_item.T.tocsr(), axis=1)
 
         self.model = NearestNeighbors(
             metric="cosine",
@@ -86,12 +96,6 @@ class SimilarityRecommender:
             .to_dict()
         )
 
-        self.seen_movies = (
-            history.groupby("user_idx")["movie_id"]
-            .apply(set)
-            .to_dict()
-        )
-
         return self
 
     def recommend(
@@ -99,13 +103,26 @@ class SimilarityRecommender:
         user_idx: int,
         k: int = 500
     ):
-        watched = self.seen_movies.get(user_idx, set())
+        """
+        Возвращает до k непросмотренных фильмов по сходству с историей пользователя.
+
+        Использует последние max_sim_seeds положительно оценённых фильмов.
+        Для каждого кандидата выбирает максимальное сходство среди его
+        совпадений с этими фильмами и сортирует кандидатов по убыванию скора.
+
+        Args:
+            user_idx (int): Внутренний индекс пользователя.
+            k (int): Максимальное количество рекомендаций.
+
+        Returns:
+            list[tuple[int, float]]: Пары (movie_id, score).
+        """
+        watched = self.data.seen_movies.get(user_idx, set())
         
         sim_scores = {}
 
-        
         for seed_movie_id in self.liked_recent.get(user_idx, []):
-            seed_idx = self.movie_to_sim.get(seed_movie_id)
+            seed_idx = self.data.movie_to_idx.get(seed_movie_id)
 
             if seed_idx is None:
                 continue
@@ -113,7 +130,7 @@ class SimilarityRecommender:
             neighbor_ids, neighbor_scores = self.neighbors[seed_idx]
 
             for neighbor_idx, score in zip(neighbor_ids, neighbor_scores):
-                movie_id = self.sim_to_movie[neighbor_idx]
+                movie_id = self.data.movie_ids[neighbor_idx]
 
                 if movie_id in watched:
                     continue

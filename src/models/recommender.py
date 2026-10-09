@@ -1,11 +1,43 @@
-class Recommender:
+import pandas as pd
 
-    def __init__(self, m:int = 100):
+class Recommender:
+    """
+    Компонент рекомендательной система, основанный на популярности байеса.
+
+    Модель собирает списки популярности и по формуле вычисляет
+    IMDB-score, чем он выше тем релевантнее фильм
+
+    После обучения модель может выдавать top-k рекомендаций для заданного пользователя,
+    автоматически исключая просмотренные им фильмы
+
+    Attributes:
+        m (int): Вес общего среднего рейтинга при сглаживании.
+        popularity (pd.DataFrame | None): Фильмы и их статистики,
+            отсортированные по убыванию score после fit().
+        user_watched (dict[int, set[int]]): Просмотренные фильмы
+            для каждого внутреннего индекса пользователя.
+        notes:
+            Модель используется для разнообразия рекомендаций,
+            а так же для возможности cold-start
+    """
+
+    def __init__(self, m: int = 100):
         self.m = m
         self.popularity = None
 
+    def fit(self, interactions: pd.DataFrame) -> "Recommender":
+        """
+        Обучает модель рекомендаций байеса
 
-    def fit(self, interactions):
+        На вход принимает матрицу взаимодействий `user-movie-rating`
+        Считает среднее и кол-во оценок для `movie-rating`
+        И вычисляет скор по формуле IMDB
+
+        Args: 
+            interactions (pd.DataFrame): Матрица взаимодействий `user-movie-rating` 
+        Returns:
+            Recommender: Обученную модель рекомендаций
+        """
 
         C = interactions.rating.mean()
 
@@ -20,7 +52,7 @@ class Recommender:
             .reset_index()
         )
 
-        popularity["pop_score"] = (
+        popularity["score"] = (
             popularity.rating_count
             /
             (popularity.rating_count + self.m)
@@ -34,11 +66,10 @@ class Recommender:
             C
         )
 
-
         self.popularity = (
             popularity
             .sort_values(
-                "pop_score",
+                "score",
                 ascending=False
             )
             .reset_index(drop=True)
@@ -54,14 +85,26 @@ class Recommender:
 
         return self
 
-
-
     def recommend(
         self,
-        user_idx,
-        exclude_movies=None,
-        k=10
-    ):
+        user_idx: int,
+        exclude_movies: dict[int, set[int]] | None = None,
+        k: int = 10
+    ) -> list[tuple[int, float]]:
+        """
+        Возвращает top-k рекомендаций для заданного пользователя.
+
+        Запрашивает ровно нужное кол-во пользователей, но не более кол-ва доступных фильмов
+        Присутствует фильтрация:
+        Уже просмотренные фильмы игнорируются
+
+        Args: 
+            user_idx (int): Индекс пользователя
+            exclude_movies (dict[int, set[int]] | None): Посмотренные пользователем фильмы
+            k (int): Количество рекомендаций. По умолчанию `k` = 10
+        Returns:
+            list[tuple[int, float]]: Список пар `movie_id, score`. длина не превышает `k`.
+        """
 
         watched_movies = (
             exclude_movies.get(user_idx, set())
@@ -69,14 +112,13 @@ class Recommender:
             else self.user_watched.get(user_idx, set())
         )
 
-        top = self.popularity[
+        top = self.popularity.loc[
             ~self.popularity.movie_id.isin(
                 watched_movies
             )
-            .head(k)
-        ]
+        ].head(k)
 
         return [
-            [row.movie_id, row.score]
+            (int(row.movie_id), float(row.score))
             for row in top.itertuples(index=False)
         ]
