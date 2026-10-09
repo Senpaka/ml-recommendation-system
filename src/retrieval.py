@@ -33,7 +33,7 @@ class RetrievalPipeline:
 
         self.generator = None
 
-    def fit(self, history: pd.DataFrame, n_users: int)
+    def fit(self, history: pd.DataFrame, n_users: int):
 
         self.als_model.fit(history=history, n_users=n_users)
         self.similarity_model.fit(history=history, n_users=n_users)
