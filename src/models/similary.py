@@ -122,11 +122,4 @@ class SimilarityRecommender:
 
         sim_top = sorted(sim_scores.items(), key=lambda x: x[1], reverse=True)[:k]
 
-        return [
-            {
-                "user_idx": user_idx,
-                "movie_id": movie_id,
-                "score": float(score)
-            }
-            for movie_id, score in sim_top
-        ]
+        return sim_top

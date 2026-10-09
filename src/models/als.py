@@ -98,11 +98,7 @@ class AlsRecommender():
             if movie_id in watched:
                 continue
 
-            recommendations.append({
-                "user_idx": user_idx,
-                "movie_id": movie_id,
-                "score": float(score)
-            })
+            recommendations.append(movie_id, float(score))
 
             if len(recommendations) >= k:
                 break

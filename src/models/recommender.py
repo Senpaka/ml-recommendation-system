@@ -52,7 +52,6 @@ class Recommender:
             .to_dict()
         )
 
-
         return self
 
 
@@ -65,25 +64,19 @@ class Recommender:
     ):
 
         watched_movies = (
-            exclude_movies.get(
-                user_idx,
-                set()
-            )
+            exclude_movies.get(user_idx, set())
             if exclude_movies
-            else self.user_watched.get(
-                user_idx,
-                set()
-            )
+            else self.user_watched.get(user_idx, set())
         )
 
-        return (
-            self.popularity[
-                ~self.popularity.movie_id.isin(
-                    watched_movies
-                )
-            ]
+        top = self.popularity[
+            ~self.popularity.movie_id.isin(
+                watched_movies
+            )
             .head(k)
-            [["movie_id", "pop_score"]]
-            .values
-            .tolist()
-        )
+        ]
+
+        return [
+            [row.movie_id, row.score]
+            for row in top.itertuples(index=False)
+        ]
