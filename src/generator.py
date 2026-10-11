@@ -58,6 +58,7 @@ class CandidateGenerator:
 
         Args:
             users (np.ndarray): Массив уникальных идентификаторов пользователей 
+            
         Returns:
             pd.DataFrame: Кандидаты, полученные из трех моделей
         """
@@ -70,10 +71,10 @@ class CandidateGenerator:
             sim_candidates = self.similarity_model.recommend(user_idx, k=self.k_sim)
             pop_candidates = self.popularity_model.recommend(user_idx, k=self.k_pop)
 
-            self._build_rank(candidates, als_candidates, "als")
-            self._build_rank(candidates, sim_candidates, "sim")
-            self._build_rank(candidates, pop_candidates, "pop")          
-            self._build_row(user_idx, rows, candidates)
+            self._merge_source_candidates(candidates, als_candidates, "als")
+            self._merge_source_candidates(candidates, sim_candidates, "sim")
+            self._merge_source_candidates(candidates, pop_candidates, "pop")          
+            self._append_candidate_rows(user_idx, rows, candidates)
             
         result = pd.DataFrame(rows)
 
@@ -95,7 +96,7 @@ class CandidateGenerator:
         return result
 
     @staticmethod
-    def _build_rank(candidates: dict, model_candidates: list[int, float], model_name: str) -> None:
+    def _merge_source_candidates(candidates: dict, model_candidates: list[tuple[int, float]], model_name: str) -> None:
         """
         Присваивание ранга фильму для любой модели
 
@@ -104,7 +105,7 @@ class CandidateGenerator:
 
         Args:
             candidates (dict): Текущие кандидаты
-            model_candidates (list[int, float]): Кандидаты, рекомендованные моделью
+            model_candidates (list[tuple[int, float]]): Кандидаты, рекомендованные моделью
             model_name (str): Название модели
         """
         for rank, (movie_id, score) in enumerate(model_candidates, start=1):
@@ -116,15 +117,15 @@ class CandidateGenerator:
             })
 
     @staticmethod
-    def _build_row(user_idx: int, rows: list[dict], candidates: dict) -> None:
+    def _append_candidate_rows(user_idx: int, rows: list[dict], candidates: dict) -> None:
         """
-        Добавляет rff к каждому фильму
+        Добавляет rrf к каждому фильму
 
         проходится по всем кандидатам и для каждого считает rff
 
         Args:
             user_idx (int): Индекс пользователя
-            rows (list[dict]): Колонки для построения кандидатов
+            rows (list[dict]): Строки для построения кандидатов
             candidates (dict): Текущие кандидаты из трех моделей
         """
         for movie_id, features in candidates.items():

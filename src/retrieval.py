@@ -9,7 +9,24 @@ import pandas as pd
 
 class RetrievalPipeline:
     """
-    
+    Обучает retrieval-модели и формирует кандидатов для ранжирования.
+
+    Подготавливает общие данные для ALS и Similarity, обучает три модели
+    на одной истории взаимодействий и создаёт CandidateGenerator.
+    Генератор объединяет рекомендации источников и отбирает кандидатов по RRF.
+
+    Attributes:
+        als_model (AlsRecommender): Модель рекомендаций на основе ALS.
+        similarity_model (SimilarityRecommender): Модель сходства фильмов.
+        popularity_model (Recommender): Модель рейтинга с байесовским сглаживанием.
+        user_encoder: Энкодер для преобразования user_id и user_idx.
+        k_als (int): Максимальное количество кандидатов из ALS.
+        k_sim (int): Максимальное количество кандидатов из Similarity.
+        k_pop (int): Максимальное количество кандидатов из Popularity.
+        candidate_k (int): Максимальное количество итоговых кандидатов
+            на пользователя после отбора по RRF.
+        generator (CandidateGenerator | None): Генератор кандидатов.
+            Создаётся при успешном выполнении fit().
     """
     def __init__(
         self,
@@ -36,7 +53,22 @@ class RetrievalPipeline:
         self.generator = None
 
     def fit(self, history: pd.DataFrame, n_users: int):
+        """
+        Обучает retrieval-модели на общей истории взаимодействий.
 
+        Создаёт RetrievalData для ALS и Similarity, обучает модели
+        и инициализирует генератор кандидатов.
+
+        Args:
+            history (pd.DataFrame): История взаимодействий с колонками
+                user_idx, movie_id, rating и timestamp.
+                user_idx должен соответствовать переданному user_encoder.
+            n_users (int): Количество строк пользовательской матрицы.
+                Все user_idx должны находиться в диапазоне [0, n_users).
+
+        Returns:
+            RetrievalPipeline: Обученный экземпляр пайплайна.
+        """
         data = build_retrieval_data(history=history, n_users=n_users)
 
         self.als_model.fit(data=data)
@@ -57,7 +89,25 @@ class RetrievalPipeline:
         return self
 
     def make_candidates(self, users: pd.Series):
+        """
+        Формирует кандидатов для указанных пользователей.
 
+        Объединяет рекомендации ALS, Similarity и Popularity,
+        сохраняет признаки источников и оставляет до candidate_k
+        фильмов на пользователя по убыванию RRF.
+
+        Args:
+            users (pd.Series): Уникальные внутренние индексы пользователей
+                (user_idx).
+
+        Returns:
+            pd.DataFrame: Таблица кандидатов с user_idx, user_id, movie_id,
+                скорами и рангами источников, признаками from_* и значением rrf.
+                Если кандидатов нет, возвращает пустой DataFrame без колонок.
+
+        Raises:
+            RuntimeError: Если генератор ещё не создан вызовом fit().
+        """
         if self.generator is None:
             raise RuntimeError("RetrievalPipeline must be fitted first.")
 

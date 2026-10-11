@@ -116,7 +116,13 @@ class SimilarityRecommender:
 
         Returns:
             list[tuple[int, float]]: Пары (movie_id, score).
+            
+        Raises:
+            ValueError: Если количество рекомендаций отрицательно
         """
+        if k <= 0:
+            raise ValueError("k must be positive.")
+        
         watched = self.data.seen_movies.get(user_idx, set())
         
         sim_scores = {}
