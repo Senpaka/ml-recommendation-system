@@ -7,6 +7,7 @@ def build_features(
     df_users: pd.DataFrame,
     df_movies: pd.DataFrame,
     query_prefix: str = "inference"
+<<<<<<< HEAD
 ) -> pd.DataFrame:
     """
     Строит дополнительные признаки для таблицы
@@ -32,6 +33,9 @@ def build_features(
     Returns:
         pd.DataFrame: Данные с построенными признаками
     """
+=======
+):
+>>>>>>> 7c35de93ee702fafe91d3d606f22a896f0c7db03
     
     data = candidates.copy()
 
@@ -75,6 +79,7 @@ def build_features(
 
     return data
 
+<<<<<<< HEAD
 def add_labels(data: pd.DataFrame, target: pd.DataFrame) -> pd.DataFrame:
     """
     Добавляет метку к данным
@@ -88,6 +93,9 @@ def add_labels(data: pd.DataFrame, target: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Данные с меткой фильма
     """
+=======
+def add_labels(data: pd.DataFrame, target: pd.DataFrame):
+>>>>>>> 7c35de93ee702fafe91d3d606f22a896f0c7db03
     target_labels = target[["user_id", "movie_id", "rating"]].copy()
     target_labels["label"] = np.where(
         target_labels["rating"] >= 4, 
