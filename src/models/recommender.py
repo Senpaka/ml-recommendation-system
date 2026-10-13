@@ -35,6 +35,7 @@ class Recommender:
 
         Args: 
             interactions (pd.DataFrame): Матрица взаимодействий `user-movie-rating` 
+            
         Returns:
             Recommender: Обученную модель рекомендаций
         """
@@ -102,13 +103,19 @@ class Recommender:
             user_idx (int): Индекс пользователя
             exclude_movies (dict[int, set[int]] | None): Посмотренные пользователем фильмы
             k (int): Количество рекомендаций. По умолчанию `k` = 10
+
         Returns:
             list[tuple[int, float]]: Список пар `movie_id, score`. длина не превышает `k`.
+            
+        Raises:
+            ValueError: Если количество рекомендаций отрицательно
         """
+        if k <= 0:
+            raise ValueError("k must be positive.")
 
         watched_movies = (
             exclude_movies.get(user_idx, set())
-            if exclude_movies
+            if exclude_movies is not None
             else self.user_watched.get(user_idx, set())
         )
 

@@ -1,3 +1,4 @@
+from src.data import RetrievalData
 from src.models.als import AlsRecommender
 from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender
@@ -20,7 +21,7 @@ class CandidateGenerator:
         k_sim (int): Количество кандидатов из Similarity модели
         k_pop (int): Количество кандидатов из IMDB модели
         candidate_k (int): Лимит кандидатов на 1 пользователя
-        user_encoder: Декодировщик для пользователей
+        data RetrievalData: Контейнер для хранения данных
         als_model (AlsRecommender): Обученная ALS модель
         similarity_model (SimilarityRecommender): Обученная Similarity модель
         popularity_model (Recommender): Обученная IMDB модель
@@ -30,18 +31,17 @@ class CandidateGenerator:
         als_model: AlsRecommender,
         similarity_model: SimilarityRecommender,
         popularity_model: Recommender,
-        user_encoder,
+        data: RetrievalData,
         k_als: int = 500,
         k_sim: int = 1100,
         k_pop: int = 300,
         candidate_k: int = 500
     ):
-
+        self.data = data
         self.k_als = k_als
         self.k_sim = k_sim
         self.k_pop = k_pop
         self.candidate_k = candidate_k
-        self.user_encoder = user_encoder
         self.als_model = als_model
         self.similarity_model = similarity_model
         self.popularity_model = popularity_model
@@ -91,7 +91,9 @@ class CandidateGenerator:
             .reset_index(drop=True)
         )
 
-        result["user_id"] = self.user_encoder.inverse_transform(result["user_idx"])
+        result["user_id"] = self.data.user_ids[
+            result["user_idx"].to_numpy(dtype=np.intp)
+        ]
 
         return result
 

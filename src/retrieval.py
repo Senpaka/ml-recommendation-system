@@ -1,3 +1,5 @@
+import numpy as np
+
 from src.models.als import AlsRecommender
 from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender
@@ -19,7 +21,6 @@ class RetrievalPipeline:
         als_model (AlsRecommender): Модель рекомендаций на основе ALS.
         similarity_model (SimilarityRecommender): Модель сходства фильмов.
         popularity_model (Recommender): Модель рейтинга с байесовским сглаживанием.
-        user_encoder: Энкодер для преобразования user_id и user_idx.
         k_als (int): Максимальное количество кандидатов из ALS.
         k_sim (int): Максимальное количество кандидатов из Similarity.
         k_pop (int): Максимальное количество кандидатов из Popularity.
@@ -33,7 +34,6 @@ class RetrievalPipeline:
         als_params: dict,
         sim_params: dict,
         pop_params: dict,
-        user_encoder,
         k_als: int = 500,
         k_sim: int = 1100,
         k_pop: int = 300,
@@ -43,8 +43,6 @@ class RetrievalPipeline:
         self.similarity_model = SimilarityRecommender(**sim_params)
         self.popularity_model = Recommender(**pop_params)
 
-        self.user_encoder = user_encoder
-
         self.k_als = k_als
         self.k_sim = k_sim
         self.k_pop = k_pop
@@ -52,7 +50,7 @@ class RetrievalPipeline:
 
         self.generator = None
 
-    def fit(self, history: pd.DataFrame, n_users: int):
+    def fit(self, history: pd.DataFrame):
         """
         Обучает retrieval-модели на общей истории взаимодействий.
 
@@ -61,25 +59,30 @@ class RetrievalPipeline:
 
         Args:
             history (pd.DataFrame): История взаимодействий с колонками
-                user_idx, movie_id, rating и timestamp.
-                user_idx должен соответствовать переданному user_encoder.
-            n_users (int): Количество строк пользовательской матрицы.
-                Все user_idx должны находиться в диапазоне [0, n_users).
+                movie_id, rating и timestamp.
 
         Returns:
             RetrievalPipeline: Обученный экземпляр пайплайна.
         """
-        data = build_retrieval_data(history=history, n_users=n_users)
+        self.generator = None
 
-        self.als_model.fit(data=data)
-        self.similarity_model.fit(data=data, history=history)
-        self.popularity_model.fit(history)
+        self.data = build_retrieval_data(history=history)
+
+        indexed_history = history.copy()
+        indexed_history["user_idx"] = (
+            indexed_history["user_id"]
+            .map(self.data.user_to_idx)
+            .astype(np.intp)
+        )
+
+        self.als_model.fit(data=self.data)
+        self.similarity_model.fit(data=self.data, history=indexed_history)
+        self.popularity_model.fit(indexed_history)
 
         self.generator = CandidateGenerator(
             als_model=self.als_model,
             similarity_model=self.similarity_model,
             popularity_model=self.popularity_model,
-            user_encoder=self.user_encoder,
             k_als=self.k_als,
             k_sim=self.k_sim,
             k_pop=self.k_pop,
@@ -97,8 +100,8 @@ class RetrievalPipeline:
         фильмов на пользователя по убыванию RRF.
 
         Args:
-            users (pd.Series): Уникальные внутренние индексы пользователей
-                (user_idx).
+            users (pd.Series): Уникальные идентификаторы пользователей
+                (user_id).
 
         Returns:
             pd.DataFrame: Таблица кандидатов с user_idx, user_id, movie_id,
@@ -107,10 +110,19 @@ class RetrievalPipeline:
 
         Raises:
             RuntimeError: Если генератор ещё не создан вызовом fit().
+            RuntimeError: Если в данных присутствует неизвестный индентификатор
         """
         if self.generator is None:
             raise RuntimeError("RetrievalPipeline must be fitted first.")
 
-        return self.generator.build_candidates(users=users)
+        user_ids = pd.Series(users).drop_duplicates()
+        user_indices = user_ids.map(self.data.user_to_idx)
+
+        unknown = user_ids.loc[user_indices.isna()]
+
+        if not unknown.empty:
+            raise ValueError(f"Unknown user IDs: {unknown.head(5).tolist()}")
+
+        return self.generator.build_candidates(users=user_indices.to_numpy(dtype=np.intp))
         
 
