@@ -83,6 +83,7 @@ class RetrievalPipeline:
             als_model=self.als_model,
             similarity_model=self.similarity_model,
             popularity_model=self.popularity_model,
+            data=self.data,
             k_als=self.k_als,
             k_sim=self.k_sim,
             k_pop=self.k_pop,
