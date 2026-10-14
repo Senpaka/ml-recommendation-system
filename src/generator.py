@@ -1,4 +1,4 @@
-from src.data import RetrievalData
+from src.data.data import RetrievalData
 from src.models.als import AlsRecommender
 from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender

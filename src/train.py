@@ -3,11 +3,11 @@ import numpy as np
 import pandas as pd
 
 from src.metrics.metrics import ndcg_at_k, recall_at_k
-from src.preprocessing import preprocess_data
+from src.data.preprocessing import preprocess_data
 from src.retrieval import RetrievalPipeline
-from src.temporal_split import TemporalSplit
+from src.data.temporal_split import TemporalSplit
 from src.config import Config
-from src.features import build_features, add_labels
+from src.features.features import build_features, add_labels
 
 def train(
     users: pd.DataFrame, 
@@ -188,6 +188,7 @@ def _evaluate_ranker(
         f"ndcg@{k}": float(np.mean(ndcgs)),
         "evaluated_users": len(ndcgs)
     }
+
 
 if __name__ == "__main__":
     from pathlib import Path

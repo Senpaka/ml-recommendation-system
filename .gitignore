@@ -4,6 +4,7 @@
 /notebook/catboost_info
 /notebook/als.parquet
 /notebook/catboost_ranker.db
+/catboost_info
 
 # Python
 __pycache__/

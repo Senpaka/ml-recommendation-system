@@ -4,7 +4,7 @@ from src.models.als import AlsRecommender
 from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender
 from src.generator import CandidateGenerator
-from src.preprocessing import build_retrieval_data
+from src.data.preprocessing import build_retrieval_data
 
 import pandas as pd
 

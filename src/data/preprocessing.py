@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from scipy.sparse import csr_matrix
-from src.data import RetrievalData
+from src.data.data import RetrievalData
 
 MAX_VALUE_ID = 2_147_483_647
 

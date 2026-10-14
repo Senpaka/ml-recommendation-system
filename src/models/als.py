@@ -1,6 +1,6 @@
 from implicit.als import AlternatingLeastSquares
 
-from src.data import RetrievalData
+from src.data.data import RetrievalData
 
 
 class AlsRecommender():

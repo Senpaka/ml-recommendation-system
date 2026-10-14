@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import normalize
 
-from src.data import RetrievalData
+from src.data.data import RetrievalData
 
 
 class SimilarityRecommender:
