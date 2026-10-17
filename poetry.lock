@@ -2669,21 +2669,6 @@ files = [
 ]
 
 [[package]]
-name = "numpy-typing-compat"
-version = "20260602.2.5"
-description = "Static typing compatibility layer for older versions of NumPy"
-optional = false
-python-versions = ">=3.12"
-groups = ["dev"]
-files = [
-    {file = "numpy_typing_compat-20260602.2.5-py3-none-any.whl", hash = "sha256:21ba7757c8924d359a9ed3ab2163c282a70983ae64498fdba6d1892a6641c8b1"},
-    {file = "numpy_typing_compat-20260602.2.5.tar.gz", hash = "sha256:1885a678e9a24564839ed5d1711c0031735fb7de7f0b5ed88d550e5d45a8d4f9"},
-]
-
-[package.dependencies]
-numpy = ">=2.5rc1,<2.6"
-
-[[package]]
 name = "optuna"
 version = "5.0.0"
 description = "A hyperparameter optimization framework"
@@ -2707,25 +2692,6 @@ tqdm = "*"
 [package.extras]
 document = ["ase", "cmaes (>=0.12.0)", "fvcore", "kaleido (!=0.2.1.post1,<0.4)", "lightgbm", "matplotlib (!=3.6.0)", "pandas", "pillow", "plotly (>=4.9.0,<7)", "scikit-learn", "sphinx", "sphinx-copybutton", "sphinx-gallery", "sphinx-notfound-page", "sphinx_rtd_theme (>=1.2.0)", "torch", "torchvision"]
 optional = ["boto3", "cmaes (>=0.12.0)", "google-cloud-storage", "greenlet", "grpcio", "matplotlib (!=3.6.0)", "pandas", "plotly (>=4.9.0)", "protobuf (>=5.28.1)", "redis", "scikit-learn (>=0.24.2)", "scipy", "torch"]
-
-[[package]]
-name = "optype"
-version = "0.19.0"
-description = "Building Blocks for Precise & Flexible Type Hints"
-optional = false
-python-versions = ">=3.12"
-groups = ["dev"]
-files = [
-    {file = "optype-0.19.0-py3-none-any.whl", hash = "sha256:31bff7d2e51e88916a11affed80dbe306ca9e74c76b93b143f1355bb127a7a8c"},
-    {file = "optype-0.19.0.tar.gz", hash = "sha256:50ce4c0ca419026eeae4130dc90c6a0b9a0b54ffe1d940fc26e8d0058903de4c"},
-]
-
-[package.dependencies]
-numpy = {version = ">=2.0,<2.8", optional = true, markers = "extra == \"numpy\""}
-numpy-typing-compat = {version = ">=20260602.2.0,<20260603", optional = true, markers = "extra == \"numpy\""}
-
-[package.extras]
-numpy = ["numpy (>=2.0,<2.8)", "numpy-typing-compat (>=20260602.2.0,<20260603)"]
 
 [[package]]
 name = "packaging"
@@ -2824,21 +2790,6 @@ sql-other = ["SQLAlchemy (>=2.0.36)", "adbc-driver-postgresql (>=1.2.0)", "adbc-
 test = ["hypothesis (>=6.116.0)", "pytest (>=8.3.4,<9.1)", "pytest-xdist (>=3.6.1)"]
 timezone = ["pytz (>=2020.1)"]
 xml = ["lxml (>=5.3.0)"]
-
-[[package]]
-name = "pandas-stubs"
-version = "3.0.5.260914"
-description = "Type annotations for pandas"
-optional = false
-python-versions = ">=3.11"
-groups = ["dev"]
-files = [
-    {file = "pandas_stubs-3.0.5.260914-py3-none-any.whl", hash = "sha256:39a1300c5c5c55fdf609e3476805decce5d5015539a4dcb683449f8feaeee2fb"},
-    {file = "pandas_stubs-3.0.5.260914.tar.gz", hash = "sha256:3f6fc1f147f68fd89c007105e7c94a948acb4ecd7eb20dc1c02e153c4ed5c250"},
-]
-
-[package.dependencies]
-numpy = ">=1.23.5"
 
 [[package]]
 name = "pandocfilters"
@@ -3846,24 +3797,6 @@ doc = ["intersphinx_registry", "jupyterlite-pyodide-kernel", "jupyterlite-sphinx
 test = ["Cython", "array-api-strict (>=2.3.1)", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja ; sys_platform != \"emscripten\"", "pooch", "pytest (>=8.0.0)", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "scipy-doctest (>=2.0.0)", "threadpoolctl"]
 
 [[package]]
-name = "scipy-stubs"
-version = "1.18.1.1"
-description = "The official type stubs for SciPy"
-optional = false
-python-versions = ">=3.12"
-groups = ["dev"]
-files = [
-    {file = "scipy_stubs-1.18.1.1-py3-none-any.whl", hash = "sha256:1a48be1702cad1ae9aa850c62ed157c988d990305880511d0e38994d502664f4"},
-    {file = "scipy_stubs-1.18.1.1.tar.gz", hash = "sha256:87995ba945f04a3c3fb9cdb5c06d093cf3637ca1271ae6799eb8030b63fb2263"},
-]
-
-[package.dependencies]
-optype = {version = ">=0.15.0,<0.20", extras = ["numpy"]}
-
-[package.extras]
-scipy = ["scipy (>=1.18.1,<1.19)"]
-
-[[package]]
 name = "send2trash"
 version = "2.1.0"
 description = "Send file to trash natively under Mac OS X, Windows and Linux"
@@ -4254,4 +4187,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "845b49ec9de5737483afb4a851f5cab4b2309263326a15b1479246426708526c"
+content-hash = "0f71babd7d1de9822bbcef2b180745b93361e81397df62a136725f522f934af8"
