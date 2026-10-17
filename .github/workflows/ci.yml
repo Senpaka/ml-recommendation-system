@@ -1,6 +1,7 @@
+
 name: CI
 
-on: 
+on:
   push:
   pull_request:
 
@@ -24,8 +25,11 @@ jobs:
 
       - name: Install Poetry
         run: pipx install poetry
-        
-      - name: install dependincies
+
+      - name: Validate Poetry configuration
+        run: poetry check --lock
+
+      - name: Install dependencies
         run: poetry install --with dev --no-interaction --no-ansi
 
       - name: Ruff lint
@@ -35,4 +39,4 @@ jobs:
         run: poetry run ruff format --check .
 
       - name: Mypy type check
-        run: portry run mypy src
+        run: poetry run mypy src
