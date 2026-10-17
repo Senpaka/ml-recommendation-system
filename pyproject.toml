@@ -19,6 +19,23 @@ dependencies = [
 [tool.poetry]
 package-mode = false
 
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+extend-select = ["I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.13"
+files = ["src"]
+strict = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["implicit.*", "sklearn.*", "catboost.*"]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -31,5 +48,7 @@ dev = [
     "matplotlib (>=3.11.1,<4.0.0)",
     "optuna (>=5.0.0,<6.0.0)",
     "scipy (>=1.18.1,<2.0.0)",
-    "implicit (>=0.7.3,<0.8.0)"
+    "implicit (>=0.7.3,<0.8.0)",
+    "mypy (>=2.4.0,<3.0.0)",
+    "ruff (>=0.17.1,<0.18.0)",
 ]

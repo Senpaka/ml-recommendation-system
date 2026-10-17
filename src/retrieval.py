@@ -1,12 +1,14 @@
-import numpy as np
+from collections.abc import Iterable
 
+import numpy as np
+import pandas as pd
+
+from src.config import ALSParams, PopularityParams, SimilarityParams
+from src.data.preprocessing import build_retrieval_data
+from src.generator import CandidateGenerator
 from src.models.als import AlsRecommender
 from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender
-from src.generator import CandidateGenerator
-from src.data.preprocessing import build_retrieval_data
-
-import pandas as pd
 
 
 class RetrievalPipeline:
@@ -29,15 +31,16 @@ class RetrievalPipeline:
         generator (CandidateGenerator | None): Генератор кандидатов.
             Создаётся при успешном выполнении fit().
     """
+
     def __init__(
         self,
-        als_params: dict,
-        sim_params: dict,
-        pop_params: dict,
+        als_params: ALSParams,
+        sim_params: SimilarityParams,
+        pop_params: PopularityParams,
         k_als: int = 500,
         k_sim: int = 1100,
         k_pop: int = 300,
-        candidate_k: int = 500
+        candidate_k: int = 500,
     ):
         self.als_model = AlsRecommender(**als_params)
         self.similarity_model = SimilarityRecommender(**sim_params)
@@ -48,9 +51,9 @@ class RetrievalPipeline:
         self.k_pop = k_pop
         self.candidate_k = candidate_k
 
-        self.generator = None
+        self.generator: CandidateGenerator | None = None
 
-    def fit(self, history: pd.DataFrame):
+    def fit(self, history: pd.DataFrame) -> "RetrievalPipeline":
         """
         Обучает retrieval-модели на общей истории взаимодействий.
 
@@ -70,9 +73,7 @@ class RetrievalPipeline:
 
         indexed_history = history.copy()
         indexed_history["user_idx"] = (
-            indexed_history["user_id"]
-            .map(self.data.user_to_idx)
-            .astype(np.intp)
+            indexed_history["user_id"].map(self.data.user_to_idx).astype(np.intp)
         )
 
         self.als_model.fit(data=self.data)
@@ -87,12 +88,12 @@ class RetrievalPipeline:
             k_als=self.k_als,
             k_sim=self.k_sim,
             k_pop=self.k_pop,
-            candidate_k=self.candidate_k
+            candidate_k=self.candidate_k,
         )
 
         return self
 
-    def make_candidates(self, users: pd.Series):
+    def make_candidates(self, users: Iterable[int]) -> pd.DataFrame:
         """
         Формирует кандидатов для указанных пользователей.
 
@@ -101,8 +102,8 @@ class RetrievalPipeline:
         фильмов на пользователя по убыванию RRF.
 
         Args:
-            users (pd.Series): Уникальные идентификаторы пользователей
-                (user_id).
+            users (Iterable[int]): Идентификаторы пользователей (user_id).
+                Принимает Series, NumPy-массив, список или другой iterable.
 
         Returns:
             pd.DataFrame: Таблица кандидатов с user_idx, user_id, movie_id,
@@ -124,6 +125,6 @@ class RetrievalPipeline:
         if not unknown.empty:
             raise ValueError(f"Unknown user IDs: {unknown.head(5).tolist()}")
 
-        return self.generator.build_candidates(users=user_indices.to_numpy(dtype=np.intp))
-        
-
+        return self.generator.build_candidates(
+            users=user_indices.to_numpy(dtype=np.intp)
+        )

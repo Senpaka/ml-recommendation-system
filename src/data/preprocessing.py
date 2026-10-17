@@ -1,85 +1,82 @@
 import numpy as np
 import pandas as pd
-
 from scipy.sparse import csr_matrix
+
 from src.data.data import RetrievalData
 
 MAX_VALUE_ID = 2_147_483_647
 
 # =========================Основной метод препроцессинга=========================
 
+
 def preprocess_data(
-    raw_users: pd.DataFrame,
-    raw_movies: pd.DataFrame,
-    raw_interactions: pd.DataFrame
-):
-    return(
+    raw_users: pd.DataFrame, raw_movies: pd.DataFrame, raw_interactions: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    return (
         preprocess_users(raw_users),
         preprocess_movies(raw_movies),
-        preprocess_interactions(raw_interactions)
+        preprocess_interactions(raw_interactions),
     )
+
 
 # =========================методы препроцессинга=========================
 
-def preprocess_movies(df: pd.DataFrame):
+
+def preprocess_movies(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
     df = _validate_id(df, "movie_id")
     df = _movie_handle_missing(df)
 
-    df = df.astype({
-        "movie_id": "int32", 
-        "title": "string",
-        "genre": "string"
-    })
+    df = df.astype({"movie_id": "int32", "title": "string", "genre": "string"})
 
     df["year"] = pd.to_numeric(
         df["title"].str.extract(r"\((\d{4})\)\s*$")[0],
         errors="coerce",
     )
 
-    genres = df.genre.str.get_dummies('|')
+    genres = df.genre.str.get_dummies("|")
 
     return pd.concat([df, genres], axis=1)
 
 
-def preprocess_users(df: pd.DataFrame):
+def preprocess_users(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
     df = _user_validate_data(df)
     df = _user_handle_missing(df)
 
-    df['gender'] = (
-        df['gender']
-        .str.strip()
-        .str.upper()
-        .map({'F': 0, 'M': 1})
-        .fillna(-1)
+    df["gender"] = df["gender"].str.strip().str.upper().map({"F": 0, "M": 1}).fillna(-1)
+
+    return df.astype(
+        {
+            "user_id": "int32",
+            "gender": "int8",
+            "age_group": "int8",
+            "occupation": "int8",
+            "zip_code": "string",
+        }
     )
 
-    return df.astype({
-        "user_id": "int32",
-        "gender": "int8",
-        "age_group": "int8",
-        "occupation": "int8",
-        "zip_code": "string",
-    })
 
-
-def preprocess_interactions(df: pd.DataFrame):
+def preprocess_interactions(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
     df = _interactions_validate_data(df)
     df = _interactions_handle_missing(df)
 
-    return df.astype({
-        "user_id": "int32",
-        "movie_id": "int32",
-        "rating": "float32",
-        "timestamp": "int64"
-    })
+    return df.astype(
+        {
+            "user_id": "int32",
+            "movie_id": "int32",
+            "rating": "float32",
+            "timestamp": "int64",
+        }
+    )
+
 
 # =========================Вспомогательные методы для фильмов=========================
+
 
 def _movie_handle_missing(df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(subset=["movie_id"])
@@ -89,7 +86,9 @@ def _movie_handle_missing(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+
 # =========================Вспомогательные методы для пользователей=========================
+
 
 def _user_handle_missing(df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(subset="user_id")
@@ -101,23 +100,25 @@ def _user_handle_missing(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def _user_validate_data(df: pd.DataFrame):
+def _user_validate_data(df: pd.DataFrame) -> pd.DataFrame:
     df = _validate_id(df, "user_id")
 
     allowed_values = {
         "age_group": {1, 18, 25, 35, 45, 50, 56, 70},
-        "occupation": set(range(21))
+        "occupation": set(range(21)),
     }
 
     for column, allowed in allowed_values.items():
         values = pd.to_numeric(df[column], errors="coerce")
-        df[column] = values.where(values.isin(allowed)) 
+        df[column] = values.where(values.isin(allowed))
 
     return df
 
+
 # =========================Вспомогательные методы для взаимодействий=========================
 
-def _interactions_validate_data(df: pd.DataFrame):
+
+def _interactions_validate_data(df: pd.DataFrame) -> pd.DataFrame:
     df = _validate_id(df, "user_id")
     df = _validate_id(df, "movie_id")
 
@@ -136,27 +137,28 @@ def _interactions_validate_data(df: pd.DataFrame):
 
     return df
 
-def _interactions_handle_missing(df: pd.DataFrame):
+
+def _interactions_handle_missing(df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(subset=["user_id", "movie_id", "rating", "timestamp"]).copy()
 
     return df
 
+
 # =========================Общие вспомогательные методы=========================
 
-def _validate_id(df: pd.DataFrame, name_id: str):
+
+def _validate_id(df: pd.DataFrame, name_id: str) -> pd.DataFrame:
     ids = pd.to_numeric(df[name_id], errors="coerce")
-    
-    valid = (
-        ids.notna()
-        & ids.between(1, MAX_VALUE_ID)
-        & ids.mod(1).eq(0)
-    )
+
+    valid = ids.notna() & ids.between(1, MAX_VALUE_ID) & ids.mod(1).eq(0)
 
     df[name_id] = ids.where(valid)
 
     return df
 
+
 # =========================Методы для Retrieval=========================
+
 
 def build_retrieval_data(history: pd.DataFrame) -> RetrievalData:
     """
@@ -169,10 +171,10 @@ def build_retrieval_data(history: pd.DataFrame) -> RetrievalData:
 
     Args:
         history (pd.DataFrame): История взаимодействий
-        
+
     Returns:
         RetrievalData: Контейнер для хранения данных
-    
+
     Raises:
     ValueError: Если передана пустая история
     """
@@ -185,34 +187,32 @@ def build_retrieval_data(history: pd.DataFrame) -> RetrievalData:
     user_ids = history["user_id"].unique()
     movie_ids = history["movie_id"].unique()
 
-    user_to_idx = {
-        user_id: idx
-        for idx, user_id in enumerate(user_ids)
-    }
-    movie_to_idx = {
-        movie_id: idx
-        for idx, movie_id in enumerate(movie_ids)
-    }
+    user_to_idx = {user_id: idx for idx, user_id in enumerate(user_ids)}
+    movie_to_idx = {movie_id: idx for idx, movie_id in enumerate(movie_ids)}
 
     history["user_idx"] = history["user_id"].map(user_to_idx)
     history["movie_idx"] = history["movie_id"].map(movie_to_idx)
 
-    seen_movies = history.groupby("user_idx")["movie_id"].apply(set).to_dict()
+    seen_movies: dict[int, set[int]] = {}
+    for user_idx, movie_id in zip(
+        history["user_idx"].to_numpy(dtype=np.intp),
+        history["movie_id"].to_numpy(dtype=np.int64),
+        strict=True,
+    ):
+        seen_movies.setdefault(int(user_idx), set()).add(int(movie_id))
 
-    positive = history.loc[
-        history["rating"] >= 4,
-    ].copy()
+    positive = history.loc[history["rating"] >= 4].copy()
 
     user_item = csr_matrix(
         (
             (positive["rating"] - 3).to_numpy(dtype=np.float32),
             (
-                positive["user_idx"].to_numpy(dtype=np.intp), 
-                positive["movie_idx"].to_numpy(dtype=np.intp)
-            )
+                positive["user_idx"].to_numpy(dtype=np.intp),
+                positive["movie_idx"].to_numpy(dtype=np.intp),
+            ),
         ),
         shape=(len(user_ids), len(movie_ids)),
-        dtype=np.float32
+        dtype=np.float32,
     )
 
     return RetrievalData(
@@ -221,5 +221,5 @@ def build_retrieval_data(history: pd.DataFrame) -> RetrievalData:
         movie_ids=movie_ids,
         seen_movies=seen_movies,
         user_to_idx=user_to_idx,
-        user_ids=user_ids
+        user_ids=user_ids,
     )

@@ -1,5 +1,5 @@
+import numpy as np
 import pandas as pd
-
 from catboost import CatBoostRanker, Pool
 
 
@@ -7,13 +7,13 @@ class Ranker:
     """
     Модель ранжирования кандидатов на градиентном бустинге CatBoost
 
-    Занимает стадию reranking в рекомендательном пайплайне: 
+    Занимает стадию reranking в рекомендательном пайплайне:
     получает признаки и вычисляет скоры релевантности кандидатов
 
     Инкапсулирует `catboost.CatBoostRanker` и `catboost.Pool`
 
     Attributes:
-        model (CatBoostRanker): Внутренняя модель CatBoost, 
+        model (CatBoostRanker): Внутренняя модель CatBoost,
         создается в `__init__` и обучается в `fit`
     """
 
@@ -68,27 +68,27 @@ class Ranker:
         y: pd.Series,
         group_id: pd.Series,
         cat_features: list[str],
-        eval_data: tuple | None = None,
+        eval_data: tuple[pd.DataFrame, pd.Series, pd.Series] | None = None,
         early_stopping_rounds: int | None = None,
-    ):
+    ) -> "Ranker":
         """
         Обучает модель ранжирования на размеченных данных
 
-        Обарачивает входные данные в `catboost.Pool` 
-        и вызывает `CatBoostRanker.fit`. Если передан 
-        `eval_data`, строит отдельный `Pool` для валидации 
+        Обарачивает входные данные в `catboost.Pool`
+        и вызывает `CatBoostRanker.fit`. Если передан
+        `eval_data`, строит отдельный `Pool` для валидации
 
         Args:
             X (pd.DataFrame): Матрица признаков
             y (pd.Series): Метки реливантности
-            group_id: (pd.Series): Индетификатор группы. 
+            group_id: (pd.Series): Индетификатор группы.
                 Строки с одинаковым `group_id` относятся к одному запросу
             cat_features (list[str]): Именования категориальный колонок в `X`
             eval_data (tuple | None): Кортеж вида `(X_val, y_val, group_val)`
                 Используется для валидации. Если `None` валидация не выполняется
             early_stopping_rounds (int | None): Число итераций без улучшения `eval_metric`,
                 после которых обучение останавливается
-                
+
         Returns:
             Ranker: Обученный экземпляр модели.
         """
@@ -120,43 +120,53 @@ class Ranker:
 
         return self
 
-    def predict(self, X: pd.DataFrame):
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
         """
-        Возвращает скоры релевантности 
+        Возвращает скоры релевантности
 
-        Args: 
-            X (pd.DataFrame): Матрица признаком, с тем же набором колонок, 
+        Args:
+            X (pd.DataFrame): Матрица признаком, с тем же набором колонок,
                 что использовался при `fit`
-        
+
         Returns:
             np.ndarray: Одномерный массив той же длинны, что и `X`.
                 Чем выше, тем релевантнее пара
         """
-        return self.model.predict(X)
+        return np.asarray(self.model.predict(X), dtype=np.float64)
 
-    def get_feature_importance(self):
+    def get_feature_importance(self, data: Pool | None = None) -> np.ndarray:
         """
         Возращает важности признаков.
 
+        Args:
+            data (Pool | None): Данные с признаками, метками и group_id.
         Returns:
             np.ndarray: Массив содержащий важности признаков
         """
-        return self.model.get_feature_importance()
+        return np.asarray(
+            self.model.get_feature_importance(data=data), dtype=np.float64
+        )
 
-    def get_best_iteration(self):
+    def get_best_iteration(self) -> int | None:
         """
         Возвращает номер лучшей итерации по `eval_data`
 
         Returns:
             int: Индекс итерации, на которой метрика на валидации была лучшей
         """
-        return self.model.get_best_iteration()
+        iteration = self.model.get_best_iteration()
+        return None if iteration is None else int(iteration)
 
-    def get_best_score(self):
+    def get_best_score(self) -> dict[str, dict[str, float]]:
         """
         Возвращает лучшие значения метрик по `eval_data`.
 
         Returns:
             dict: Словарь вида `{"validation": {"NDCG:top=10": 0.12, ...}}`
         """
-        return self.model.get_best_score()
+        return {
+            str(pool_name): {
+                str(metric): float(value) for metric, value in metrics.items()
+            }
+            for pool_name, metrics in self.model.get_best_score().items()
+        }

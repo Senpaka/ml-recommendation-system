@@ -1,19 +1,18 @@
-from catboost import CatBoostRanker, Pool
 import numpy as np
 import pandas as pd
+from catboost import CatBoostRanker, Pool
 
-from src.metrics.metrics import ndcg_at_k, recall_at_k
-from src.data.preprocessing import preprocess_data
-from src.retrieval import RetrievalPipeline
-from src.data.temporal_split import TemporalSplit
 from src.config import Config
-from src.features.features import build_features, add_labels
+from src.data.preprocessing import preprocess_data
+from src.data.temporal_split import TemporalSplit
+from src.features.features import add_labels, build_features
+from src.metrics.metrics import ndcg_at_k, recall_at_k
+from src.retrieval import RetrievalPipeline
+
 
 def train(
-    users: pd.DataFrame, 
-    movies: pd.DataFrame, 
-    interactions: pd.DataFrame
-) -> tuple:
+    users: pd.DataFrame, movies: pd.DataFrame, interactions: pd.DataFrame
+) -> tuple[CatBoostRanker, dict[str, int | float]]:
 
     config = Config()
     splitter = TemporalSplit()
@@ -79,13 +78,14 @@ def train(
 
     return model, metrics
 
+
 def _build_df(
     history: pd.DataFrame,
-    target: pd.DataFrame, 
-    users: pd.DataFrame, 
-    movies: pd.DataFrame, 
+    target: pd.DataFrame,
+    users: pd.DataFrame,
+    movies: pd.DataFrame,
     config: Config,
-    query_prefix: str
+    query_prefix: str,
 ) -> pd.DataFrame:
 
     retrieval = RetrievalPipeline(
@@ -95,43 +95,36 @@ def _build_df(
         k_als=config.k_als,
         k_sim=config.k_sim,
         k_pop=config.k_pop,
-        candidate_k=config.candidate_k
+        candidate_k=config.candidate_k,
     )
 
     retrieval.fit(history)
 
     target_users = target["user_id"].unique()
-    unknown_users = pd.Index(target_users).difference(
-        history["user_id"].unique()
-    )
+    unknown_users = pd.Index(target_users).difference(history["user_id"].unique())
 
     if len(unknown_users):
         raise ValueError(
-            "Cold-start handing is required for users:"
-            f"{unknown_users[:5].tolist()}"
+            f"Cold-start handing is required for users:{unknown_users[:5].tolist()}"
         )
 
     candidates = retrieval.make_candidates(target_users)
 
     if candidates.empty:
-        raise ValueError(
-            f"No candidates generated for {query_prefix}"
-        )
+        raise ValueError(f"No candidates generated for {query_prefix}")
 
     data = build_features(
         candidates=candidates,
         history=history,
         df_users=users,
         df_movies=movies,
-        query_prefix=query_prefix
+        query_prefix=query_prefix,
     )
 
     data = add_labels(data=data, target=target)
 
-    return (
-        data.sort_values(["group_id", "movie_id"])
-        .reset_index(drop=True)
-    )
+    return data.sort_values(["group_id", "movie_id"]).reset_index(drop=True)
+
 
 def _evaluate_ranker(
     model: CatBoostRanker,
@@ -140,17 +133,14 @@ def _evaluate_ranker(
     feature_columns: list[str],
     cat_features: list[str],
     k: int = 10,
-) -> dict:
+) -> dict[str, int | float]:
 
     if k <= 0:
         raise ValueError("k must be positive")
-    
+
     X = data.loc[:, feature_columns]
 
-    predictions_pool = Pool(
-        data=X,
-        cat_features=cat_features
-    )
+    predictions_pool = Pool(data=X, cat_features=cat_features)
 
     scored = data[["user_id", "movie_id"]].copy()
     scored["score"] = model.predict(predictions_pool)
@@ -170,9 +160,7 @@ def _evaluate_ranker(
     )
 
     if not relevant:
-        raise ValueError(
-            "No positive interactions in the evaluation target"
-        )
+        raise ValueError("No positive interactions in the evaluation target")
 
     recalls = []
     ndcgs = []
@@ -186,31 +174,39 @@ def _evaluate_ranker(
     return {
         f"recall@{k}": float(np.mean(recalls)),
         f"ndcg@{k}": float(np.mean(ndcgs)),
-        "evaluated_users": len(ndcgs)
+        "evaluated_users": len(ndcgs),
     }
 
 
 if __name__ == "__main__":
     from pathlib import Path
+
     DATA_DIR = Path(__file__).resolve().parent.parent / "datasets"
 
-    df_movies = pd.read_csv(DATA_DIR / "movies.dat",
-                        sep='::', engine='python',
-                        encoding="Latin-1",
-                        names=['movie_id', 'title', 'genre'])
+    df_movies = pd.read_csv(
+        DATA_DIR / "movies.dat",
+        sep="::",
+        engine="python",
+        encoding="Latin-1",
+        names=["movie_id", "title", "genre"],
+    )
 
-    df_rating = pd.read_csv(DATA_DIR / "ratings.dat",
-                            sep='::', engine='python',
-                            encoding="Latin-1",
-                            names=['user_id', 'movie_id', 'rating', 'timestamp'])
+    df_rating = pd.read_csv(
+        DATA_DIR / "ratings.dat",
+        sep="::",
+        engine="python",
+        encoding="Latin-1",
+        names=["user_id", "movie_id", "rating", "timestamp"],
+    )
 
-    df_users = pd.read_csv(DATA_DIR / "users.dat",
-                        sep='::', engine='python',
-                        encoding="Latin-1",
-                        names=["user_id", "gender", "age_group", "occupation", "zip_code"])
+    df_users = pd.read_csv(
+        DATA_DIR / "users.dat",
+        sep="::",
+        engine="python",
+        encoding="Latin-1",
+        names=["user_id", "gender", "age_group", "occupation", "zip_code"],
+    )
 
     model, metrics = train(df_users, df_movies, df_rating)
 
     print(metrics)
-
-    

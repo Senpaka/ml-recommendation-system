@@ -1,10 +1,14 @@
+import numpy as np
+import pandas as pd
+
 from src.data.data import RetrievalData
 from src.models.als import AlsRecommender
 from src.models.recommender import Recommender
 from src.models.similary import SimilarityRecommender
 
-import pandas as pd
-import numpy as np
+type CandidateFeatures = dict[str, int | float]
+type Candidates = dict[int, CandidateFeatures]
+
 
 class CandidateGenerator:
     """
@@ -12,9 +16,9 @@ class CandidateGenerator:
 
     Генератор берет рекомендации для каждого пользователя
     Строит для них ранк и rrf-score
-    
+
     После прохода по всем пользователям кандидаты собираются в единый `pd.DataFrame`
-    и сортируются по rrf-score 
+    и сортируются по rrf-score
 
     Attributes:
         k_als (int): Количество кандидатов из ALS модели
@@ -26,6 +30,7 @@ class CandidateGenerator:
         similarity_model (SimilarityRecommender): Обученная Similarity модель
         popularity_model (Recommender): Обученная IMDB модель
     """
+
     def __init__(
         self,
         als_model: AlsRecommender,
@@ -35,7 +40,7 @@ class CandidateGenerator:
         k_als: int = 500,
         k_sim: int = 1100,
         k_pop: int = 300,
-        candidate_k: int = 500
+        candidate_k: int = 500,
     ):
         self.data = data
         self.k_als = k_als
@@ -57,15 +62,15 @@ class CandidateGenerator:
         Если рекомендаций не окажется то возвращаем пустой `pd.DataFrame`
 
         Args:
-            users (np.ndarray): Массив уникальных идентификаторов пользователей 
-            
+            users (np.ndarray): Массив уникальных идентификаторов пользователей
+
         Returns:
             pd.DataFrame: Кандидаты, полученные из трех моделей
         """
-        rows = []
+        rows: list[CandidateFeatures] = []
 
         for user_idx in users:
-            candidates = {}
+            candidates: Candidates = {}
 
             als_candidates = self.als_model.recommend(user_idx, k=self.k_als)
             sim_candidates = self.similarity_model.recommend(user_idx, k=self.k_sim)
@@ -73,19 +78,16 @@ class CandidateGenerator:
 
             self._merge_source_candidates(candidates, als_candidates, "als")
             self._merge_source_candidates(candidates, sim_candidates, "sim")
-            self._merge_source_candidates(candidates, pop_candidates, "pop")          
+            self._merge_source_candidates(candidates, pop_candidates, "pop")
             self._append_candidate_rows(user_idx, rows, candidates)
-            
+
         result = pd.DataFrame(rows)
 
         if result.empty:
             return result
 
         result = (
-            result.sort_values(
-                ["user_idx", "rrf"],
-                ascending=[True, False]
-            )
+            result.sort_values(["user_idx", "rrf"], ascending=[True, False])
             .groupby("user_idx")
             .head(self.candidate_k)
             .reset_index(drop=True)
@@ -98,7 +100,11 @@ class CandidateGenerator:
         return result
 
     @staticmethod
-    def _merge_source_candidates(candidates: dict, model_candidates: list[tuple[int, float]], model_name: str) -> None:
+    def _merge_source_candidates(
+        candidates: Candidates,
+        model_candidates: list[tuple[int, float]],
+        model_name: str,
+    ) -> None:
         """
         Присваивание ранга фильму для любой модели
 
@@ -112,14 +118,18 @@ class CandidateGenerator:
         """
         for rank, (movie_id, score) in enumerate(model_candidates, start=1):
             candidates.setdefault(movie_id, {})
-            candidates[movie_id].update({
-                f"{model_name}_score": float(score),
-                f"{model_name}_rank": rank,
-                f"from_{model_name}": 1
-            })
+            candidates[movie_id].update(
+                {
+                    f"{model_name}_score": float(score),
+                    f"{model_name}_rank": rank,
+                    f"from_{model_name}": 1,
+                }
+            )
 
     @staticmethod
-    def _append_candidate_rows(user_idx: int, rows: list[dict], candidates: dict) -> None:
+    def _append_candidate_rows(
+        user_idx: int, rows: list[CandidateFeatures], candidates: Candidates
+    ) -> None:
         """
         Добавляет rrf к каждому фильму
 
@@ -131,8 +141,7 @@ class CandidateGenerator:
             candidates (dict): Текущие кандидаты из трех моделей
         """
         for movie_id, features in candidates.items():
-        
-            rrf = 0.
+            rrf = 0.0
 
             if features.get("from_als"):
                 rrf += 1 / (60 + features["als_rank"])
@@ -143,21 +152,19 @@ class CandidateGenerator:
             if features.get("from_pop"):
                 rrf += 1 / (60 + features["pop_rank"])
 
-            rows.append({
-                "user_idx": int(user_idx),
-                "movie_id": int(movie_id),
-
-                "als_score": features.get("als_score", 0.0),
-                "sim_score": features.get("sim_score", 0.0),
-                "pop_score": features.get("pop_score", 0.0),
-
-                "als_rank": features.get("als_rank", 0),
-                "sim_rank": features.get("sim_rank", 0),
-                "pop_rank": features.get("pop_rank", 0),
-
-                "from_als": features.get("from_als", 0),
-                "from_sim": features.get("from_sim", 0),
-                "from_pop": features.get("from_pop", 0),
-
-                "rrf": rrf
-            })
+            rows.append(
+                {
+                    "user_idx": int(user_idx),
+                    "movie_id": int(movie_id),
+                    "als_score": features.get("als_score", 0.0),
+                    "sim_score": features.get("sim_score", 0.0),
+                    "pop_score": features.get("pop_score", 0.0),
+                    "als_rank": features.get("als_rank", 0),
+                    "sim_rank": features.get("sim_rank", 0),
+                    "pop_rank": features.get("pop_rank", 0),
+                    "from_als": features.get("from_als", 0),
+                    "from_sim": features.get("from_sim", 0),
+                    "from_pop": features.get("from_pop", 0),
+                    "rrf": rrf,
+                }
+            )

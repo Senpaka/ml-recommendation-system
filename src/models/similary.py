@@ -13,7 +13,7 @@ class SimilarityRecommender:
     Модель обучается на матрице взаимодействий "пользователь-фильм",
     построенной по положительной оценке (rating >= 4)
     в качестве веса взаимодействий используется (rating - 3)
-    это усилит вклад положительных оценок при обучении 
+    это усилит вклад положительных оценок при обучении
 
     После обучения модель может выдавать top-k рекомендаций для заданного пользователя,
     автоматически исключая просмотренные им фильмы
@@ -23,12 +23,13 @@ class SimilarityRecommender:
         max_sim_seeds (int): Максимальное число последних положительно оценённых фильмов, используемых для поиска похожих
         movie_user (csr_matrix): Транспонированная и нормализованная по строкам матрица
         model (NearestNeighbors): Модель поиска ближайших соседей
-        neighbors (dict[int: tuple]): Словарь с наиболее похожими фильмами. 
+        neighbors (dict[int: tuple]): Словарь с наиболее похожими фильмами.
             Внутренний индекс фильма → пара массивов индексов соседей и сходств
         liked_recent (dict[int, list[int]]): Фильмы, которые пользователь оценил положительно
         data (RetrievalData): Общие данные retrieval: матрица взаимодействий,
             соответствия индексов и просмотренные фильмы.
     """
+
     def __init__(
         self,
         k_neighbors: int = 100,
@@ -38,9 +39,7 @@ class SimilarityRecommender:
         self.max_sim_seeds = max_sim_seeds
 
     def fit(
-        self,
-        data: RetrievalData,
-        history: pd.DataFrame
+        self, data: RetrievalData, history: pd.DataFrame
     ) -> "SimilarityRecommender":
         """
         Модель обучает `NearestNeighbors` на истории взаимодействий фильмов с пользователями
@@ -48,10 +47,10 @@ class SimilarityRecommender:
         На вход принимает собранный `RetrievalData` и обучает `NearestNeighbors`
         Сам `RetrievalData` сохраняется в `self.data` и используется в `recommend`
 
-        args: 
+        args:
             data (RetrievalData): Контейнер, хранящий данные для Retireval
             history (pd.DataFrame): История взаимодействий
-        
+
         return:
             SimilarityRecommender: self обученный экземпляр рекомендаций
         """
@@ -78,12 +77,11 @@ class SimilarityRecommender:
         self.neighbors = {}
 
         for movie_idx in range(self.movie_user.shape[0]):
-
             mask = indices[movie_idx] != movie_idx
 
             self.neighbors[movie_idx] = (
-                indices[movie_idx][mask][:self.k_neighbors],
-                (1.0 - distances[movie_idx][mask])[:self.k_neighbors]
+                indices[movie_idx][mask][: self.k_neighbors],
+                (1.0 - distances[movie_idx][mask])[: self.k_neighbors],
             )
 
         self.liked_recent = (
@@ -98,11 +96,7 @@ class SimilarityRecommender:
 
         return self
 
-    def recommend(
-        self,
-        user_idx: int,
-        k: int = 500
-    ):
+    def recommend(self, user_idx: int, k: int = 500) -> list[tuple[int, float]]:
         """
         Возвращает до k непросмотренных фильмов по сходству с историей пользователя.
 
@@ -116,16 +110,16 @@ class SimilarityRecommender:
 
         Returns:
             list[tuple[int, float]]: Пары (movie_id, score).
-            
+
         Raises:
             ValueError: Если количество рекомендаций отрицательно
         """
         if k <= 0:
             raise ValueError("k must be positive.")
-        
+
         watched = self.data.seen_movies.get(user_idx, set())
-        
-        sim_scores = {}
+
+        sim_scores: dict[int, float] = {}
 
         for seed_movie_id in self.liked_recent.get(user_idx, []):
             seed_idx = self.data.movie_to_idx.get(seed_movie_id)
@@ -135,7 +129,7 @@ class SimilarityRecommender:
 
             neighbor_ids, neighbor_scores = self.neighbors[seed_idx]
 
-            for neighbor_idx, score in zip(neighbor_ids, neighbor_scores):
+            for neighbor_idx, score in zip(neighbor_ids, neighbor_scores, strict=True):
                 movie_id = self.data.movie_ids[neighbor_idx]
 
                 if movie_id in watched:

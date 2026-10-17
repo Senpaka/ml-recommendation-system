@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
-from scipy.sparse import csr_matrix
 import numpy as np
+from scipy.sparse import csr_matrix
+
 
 @dataclass
 class RetrievalData:
