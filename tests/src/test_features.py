@@ -6,26 +6,12 @@ from src.features.features import add_labels, build_features
 
 def test_aggregates_and_unknown_movie_fallback_use_history_only(history):
 
-    candidates = pd.DataFrame(
-        {
-            "user_id": [20, 100],
-            "movie_id": [900, 999]
-        }
-    )
+    candidates = pd.DataFrame({"user_id": [20, 100], "movie_id": [900, 999]})
 
-    users = pd.DataFrame(
-        {
-            "user_id": [20, 100],
-            "occupation": [3, 7]
-        }
-    )
+    users = pd.DataFrame({"user_id": [20, 100], "occupation": [3, 7]})
 
     movies = pd.DataFrame(
-        {
-            "movie_id": [900, 999],
-            "title": ["A", "B"],
-            "year": [2000, 2001]
-        }
+        {"movie_id": [900, 999], "title": ["A", "B"], "year": [2000, 2001]}
     )
 
     result = build_features(
@@ -33,7 +19,7 @@ def test_aggregates_and_unknown_movie_fallback_use_history_only(history):
         history=history,
         df_movies=movies,
         df_users=users,
-        query_prefix="test"
+        query_prefix="test",
     ).set_index("user_id")
 
     assert len(result) == len(candidates)
@@ -65,7 +51,6 @@ def test_labels_join_on_user_and_movie_without_adding_candidates():
     )
 
     before = candidates.copy()
-    target_before = target.copy()
 
     result = add_labels(data=candidates, target=target)
 

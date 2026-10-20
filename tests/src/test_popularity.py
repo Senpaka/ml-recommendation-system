@@ -1,6 +1,7 @@
+import pytest
+
 from src.models.recommender import Recommender
 
-import pytest
 
 def test_recommendations_exclude_seen_movies(popularity_history):
 
@@ -19,6 +20,7 @@ def test_recommendations_exclude_seen_movies(popularity_history):
     assert len(limited) == 1
     assert limited == recommendations[:1]
 
+
 def test_recommend_raises(popularity_history, small_history):
     model = Recommender()
     model.fit(popularity_history)
@@ -31,4 +33,3 @@ def test_recommend_raises(popularity_history, small_history):
 
     with pytest.raises(ValueError, match="Popularity doesn't has items"):
         model.recommend(user_idx=0, k=10)
-

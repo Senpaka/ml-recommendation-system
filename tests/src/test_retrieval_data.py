@@ -27,6 +27,7 @@ def test_matrix_matches_original_ids(history):
     for movie_id, idx in data.movie_to_idx.items():
         assert data.movie_ids[idx] == movie_id
 
+
 def test_negative_rating_seen_but_not_positive(history):
     data = build_retrieval_data(history=history)
 
@@ -36,12 +37,14 @@ def test_negative_rating_seen_but_not_positive(history):
     assert 900 in data.seen_movies[user_idx]
     assert data.user_item[user_idx, movie_idx] == 0
 
+
 def test_build_retrieval_does_not_modify_history(history):
     original = history.copy()
 
     build_retrieval_data(history=history)
 
     pd.testing.assert_frame_equal(history, original)
+
 
 def test_empty_history_is_rejected():
     with pytest.raises(ValueError, match="History must not be empty."):

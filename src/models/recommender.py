@@ -94,7 +94,7 @@ class Recommender:
         if k <= 0:
             raise ValueError("k must be positive.")
 
-        if self.popularity is None:
+        if self.popularity.empty:
             raise ValueError("Popularity doesn't has items")
 
         watched_movies = (

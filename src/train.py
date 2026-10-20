@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from catboost import CatBoostRanker, Pool
 
+from src.artifacts import save_artifacts
 from src.config import Config
 from src.data.preprocessing import preprocess_data
 from src.data.temporal_split import TemporalSplit
@@ -26,7 +27,7 @@ def train(
     train_df, test_target = splitter.split_to_two(interactions_df)
     train_history, train_target = splitter.split_to_two(train_df)
 
-    train_rank_df = _build_df(
+    train_rank_df, _ = _build_df(
         history=train_history,
         target=train_target,
         users=users_df,
@@ -58,7 +59,7 @@ def train(
     model = CatBoostRanker(**model_params)
     model.fit(train_pool, use_best_model=False)
 
-    test_rank_df = _build_df(
+    test_rank_df, test_retrieval = _build_df(
         history=train_df,
         target=test_target,
         users=users_df,
@@ -76,6 +77,20 @@ def train(
         k=10,
     )
 
+    test_retrieval.fit(interactions_df)
+
+    save_artifacts(
+        directory="artifacts/current",
+        ranker=model,
+        retrieval=test_retrieval,
+        users=users_df,
+        movies=movies_df,
+        history=interactions_df,
+        feature_columns=feature_columns,
+        config=config,
+        metrics=metrics,
+    )
+
     return model, metrics
 
 
@@ -86,7 +101,7 @@ def _build_df(
     movies: pd.DataFrame,
     config: Config,
     query_prefix: str,
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, RetrievalPipeline]:
 
     retrieval = RetrievalPipeline(
         als_params=config.als_params,
@@ -123,7 +138,9 @@ def _build_df(
 
     data = add_labels(data=data, target=target)
 
-    return data.sort_values(["group_id", "movie_id"]).reset_index(drop=True)
+    data = data.sort_values(["group_id", "movie_id"]).reset_index(drop=True)
+
+    return data, retrieval
 
 
 def _evaluate_ranker(

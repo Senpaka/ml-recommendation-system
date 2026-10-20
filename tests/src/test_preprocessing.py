@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-import pytest 
+import pytest
 
 from src.data.preprocessing import (
     preprocess_interactions,
     preprocess_movies,
-    preprocess_users
+    preprocess_users,
 )
 
 
@@ -48,7 +48,11 @@ def test_users_normalize_categories_without_losing_zip_zeroes():
     assert result.loc[20, "gender"] == 0
     assert result.loc[20, "age_group"] == 25
     assert result.loc[20, "zip_code"] == "00123"
-    assert result.loc[100, ["gender", "age_group", "occupation"]].tolist() == [-1, -1, -1]
+    assert result.loc[100, ["gender", "age_group", "occupation"]].tolist() == [
+        -1,
+        -1,
+        -1,
+    ]
     assert result.loc[100, "zip_code"] == "unknown"
     pd.testing.assert_frame_equal(raw, original)
 

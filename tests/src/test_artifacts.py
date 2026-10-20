@@ -44,19 +44,15 @@ def test_save_load_ranker_retrieval_and_metadata(
         history=history,
         feature_columns=list(X.columns),
         config=fast_config,
-        metrics={"recall@10": 0.25}
+        metrics={"recall@10": 0.25},
     )
 
     loaded = load_artifacts(str(directory))
     after = loaded["retrieval"].make_candidates([20, 37])
 
-    pd.testing.assert_frame_equal(
-        before, after
-    )
+    pd.testing.assert_frame_equal(before, after)
 
-    np.testing.assert_allclose(
-        ranker.predict(X), loaded["ranker"].predict(X)
-    )
+    np.testing.assert_allclose(ranker.predict(X), loaded["ranker"].predict(X))
 
     assert loaded["metadata"]["feature_columns"] == ["z_test", "a_test"]
     assert loaded["metadata"]["evaluation_metrics"] == {"recall@10": 0.25}

@@ -19,11 +19,7 @@ def test_evaluation_includes_users_without_predictions():
     data = pd.DataFrame({"user_id": [20, 20], "movie_id": [500, 900], "signal": [0, 1]})
 
     target = pd.DataFrame(
-        {
-            "user_id": [20, 100],
-            "movie_id": [900, 300],
-            "rating": [5, 4]
-        }
+        {"user_id": [20, 100], "movie_id": [900, 300], "rating": [5, 4]}
     )
 
     metrics = _evaluate_ranker(FixedRanker(), data, target, ["signal"], [], k=10)
@@ -74,7 +70,9 @@ def test_train_cpu_saves_loadable_working_artifacts(
     assert set(retrieval.data.user_to_idx) == set(expected_users.user_id)
     assert seen == set(expected_history.loc[expected_history.user_id == 20, "movie_id"])
     assert not candidates.empty
-    assert set(columns).isdisjoint({"label", "user_id", "user_idx", "movie_id", "group_id"})
+    assert set(columns).isdisjoint(
+        {"label", "user_id", "user_idx", "movie_id", "group_id"}
+    )
 
     pool = Pool(data[columns], cat_features=artifacts["metadata"]["cat_features"])
 

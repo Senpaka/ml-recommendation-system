@@ -12,7 +12,7 @@ def test_recommend_before_fit():
 
 
 def test_real_pipeline_returns_original_ids_and_filters_seen(
-        fitted_retrieval, raw_dataset
+    fitted_retrieval, raw_dataset
 ):
     history = raw_dataset[2]
     result = fitted_retrieval.make_candidates([20, 37, 20])
@@ -36,7 +36,7 @@ def test_unknown_user_is_explicitly_rejected(fitted_retrieval):
 
 
 def test_refit_rebuilds_mappings_and_does_not_modify_input(
-        fitted_retrieval, raw_dataset
+    fitted_retrieval, raw_dataset
 ):
     history = raw_dataset[2]
     subset = history.loc[history.user_id.isin([54, 71])].copy()

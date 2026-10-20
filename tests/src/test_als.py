@@ -1,9 +1,8 @@
-from src.config import Config
-from src.models.als import AlsRecommender
-from src.retrieval import build_retrieval_data
-
 import numpy as np
 import pytest
+
+from src.models.als import AlsRecommender
+from src.retrieval import build_retrieval_data
 
 
 def test_recommendations_exclude_seen_movies(history):
