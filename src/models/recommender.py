@@ -69,38 +69,41 @@ class Recommender:
 
     def recommend(
         self,
-        user_idx: int,
+        user_idx: int | None = None,
         exclude_movies: dict[int, set[int]] | None = None,
         k: int = 10,
     ) -> list[tuple[int, float]]:
         """
-        Возвращает top-k рекомендаций для заданного пользователя.
-
-        Запрашивает ровно нужное кол-во пользователей, но не более кол-ва доступных фильмов
-        Присутствует фильтрация:
-        Уже просмотренные фильмы игнорируются
+        Возвращает до k популярных фильмов, исключая просмотренные.
+        При user_idx=None возвращает общий топ без фильтрации по истории.
 
         Args:
-            user_idx (int): Индекс пользователя
-            exclude_movies (dict[int, set[int]] | None): Посмотренные пользователем фильмы
+            user_idx (int | None): Внутренний индекс пользователя или None.
+            exclude_movies (dict[int, set[int]] | None): Словарь просмотренных фильмов по внутренним
+                индексам пользователей. Если передан, используется вместо
+                сохранённой истории просмотров.
             k (int): Количество рекомендаций. По умолчанию `k` = 10
 
         Returns:
-            list[tuple[int, float]]: Список пар `movie_id, score`. длина не превышает `k`.
+            list[tuple[int, float]]: Список пар (movie_id, score), упорядоченный по убыванию
+                оценки популярности.
 
         Raises:
-            ValueError: Если количество рекомендаций отрицательно
+            ValueError: Если k <= 0 или список популярных фильмов отсутствует
+                либо пуст.
         """
         if k <= 0:
             raise ValueError("k must be positive.")
 
         if self.popularity is None or self.popularity.empty:
-            raise ValueError("Popularity doesn't has items")
+            raise ValueError("Popularity recommendations are unavailable.")
+
+        watched_by_user = (
+            self.user_watched if exclude_movies is None else exclude_movies
+        )
 
         watched_movies = (
-            exclude_movies.get(user_idx, set())
-            if exclude_movies is not None
-            else self.user_watched.get(user_idx, set())
+            watched_by_user.get(user_idx, set()) if user_idx is not None else set()
         )
 
         top = self.popularity.loc[~self.popularity.movie_id.isin(watched_movies)].head(
