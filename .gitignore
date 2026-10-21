@@ -1,5 +1,11 @@
 .env
 /datasets
+/notebook/data
+/notebook/catboost_info
+/notebook/als.parquet
+/notebook/catboost_ranker.db
+/catboost_info
+/artifacts
 
 # Python
 __pycache__/
