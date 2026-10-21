@@ -33,7 +33,7 @@ extend-select = ["I", "B", "UP"]
 
 [tool.mypy]
 python_version = "3.13"
-files = ["src"]
+files = ["src", "services", "core"]
 strict = true
 warn_unused_configs = true
 

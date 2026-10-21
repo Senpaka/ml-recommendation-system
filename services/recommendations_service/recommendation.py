@@ -1,6 +1,8 @@
 import logging
 from pathlib import Path
+from typing import Any, Self
 
+import numpy as np
 from catboost import Pool
 
 from src.artifacts import load_artifacts
@@ -10,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class RecommendationService:
-    def __init__(self, artifacts: dict):
+    def __init__(self, artifacts: dict[str, Any]) -> None:
         self.artifacts = artifacts
 
     @classmethod
-    def from_artifacts(cls, path: str | Path):
+    def from_artifacts(cls, path: str | Path) -> Self:
 
         path = Path(path)
 
@@ -109,11 +111,16 @@ class RecommendationService:
 
         logger.info("Recommendations is ready.")
 
-        for row in top.itertuples(index=False):
-            results[int(row.user_id)].append(
+        for user_id_value, movie_id_value, score_value in zip(
+            top["user_id"].to_numpy(dtype=np.int64),
+            top["movie_id"].to_numpy(dtype=np.int64),
+            top["score"].to_numpy(dtype=np.float64),
+            strict=True,
+        ):
+            results[int(user_id_value)].append(
                 {
-                    "movie_id": int(row.movie_id),
-                    "score": float(row.score),
+                    "movie_id": int(movie_id_value),
+                    "score": float(score_value),
                 }
             )
 
