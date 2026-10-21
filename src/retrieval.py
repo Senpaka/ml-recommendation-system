@@ -128,3 +128,35 @@ class RetrievalPipeline:
         return self.generator.build_candidates(
             users=user_indices.to_numpy(dtype=np.intp)
         )
+
+    def can_personalize(self, user_id: int) -> bool:
+        if self.generator is None:
+            raise RuntimeError("RetrievalPipeline must be fitted first.")
+
+        user_idx = self.data.user_to_idx.get(user_id)
+
+        if user_idx is None:
+            return False
+
+        matrix = self.data.user_item
+
+        return bool(matrix.indptr[user_idx + 1] > matrix.indptr[user_idx])
+
+    def recommend_popular(
+        self,
+        user_id: int,
+        k: int = 10,
+    ) -> list[tuple[int, float]]:
+
+        if k <= 0:
+            raise ValueError("k must be positive.")
+
+        if self.generator is None:
+            raise RuntimeError("RetrievalPipeline must be fitted first.")
+
+        user_idx = self.data.user_to_idx.get(user_id)
+
+        return self.popularity_model.recommend(
+            user_idx=user_idx,
+            k=k,
+        )

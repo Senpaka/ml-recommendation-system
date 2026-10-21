@@ -31,5 +31,5 @@ def test_recommend_raises(popularity_history, small_history):
     model = Recommender()
     model.fit(small_history)
 
-    with pytest.raises(ValueError, match="Popularity doesn't has items"):
+    with pytest.raises(ValueError, match="Popularity recommendations are unavailable."):
         model.recommend(user_idx=0, k=10)
