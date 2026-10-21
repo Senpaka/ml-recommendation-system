@@ -22,6 +22,7 @@ def dependencies(monkeypatch):
 
     features = pd.DataFrame(
         {
+            "user_id": [42, 42, 42],
             "movie_id": [30, 20, 10],
             "feature_a": [3.0, 2.0, 1.0],
             "unused_feature": [100, 200, 300],
